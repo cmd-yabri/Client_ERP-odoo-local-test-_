@@ -1,0 +1,48 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Python cache / env
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+venv/
+.venv/
+backend/venv/
+
+# Logs / local secrets
+*.log
+logs/
+secrets/
+*.env
+.env
+.env.*
+
+# Build artifacts and installers (large generated binaries)
+artifacts/
+third_party/
+backend/clienterp_runtime/
+backend/odoo-bin.build/
+backend/odoo-bin.dist/
+backend/odoo-bin
+backend/*.exe
+backend/*.dll
+backend/*.pyd
+
+# Vendored Odoo runtime content (too large for source repo)
+backend/addons/
+backend/odoo/
+
+# Packaging output
+build/**/Output/
+installer/**/*.exe
+
+# Local crash dumps
+nuitka-crash-report.xml
+
+# Git LFS leftovers (if present locally)
+.git/lfs/tmp/

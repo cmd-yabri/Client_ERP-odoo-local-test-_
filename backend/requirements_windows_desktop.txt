@@ -1,0 +1,5 @@
+﻿-r requirements.txt
+
+# Desktop shell dependencies (embedded window over WebView2 on Windows)
+pywebview>=5.0,<6.0
+pythonnet>=3.0,<4.0

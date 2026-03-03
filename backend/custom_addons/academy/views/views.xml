@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<record id="action_report_course" model="ir.actions.report">
+    <field name="name">Course Details</field>
+    <field name="model">academy.course</field>
+    <field name="report_type">qweb-pdf</field>
+    <field name="report_name">academy.report_course_details_template</field>
+    <field name="report_file">academy.report_course_details_template</field>
+    <field name="print_report_name">"Course - %s" % object.name</field>
+    <field name="binding_model_id" ref="model_academy_course"/>
+    <field name="binding_type">report</field>
+</record>
+    <record id="view_academy_course_tree" model="ir.ui.view">
+        <field name="name">academy.course.tree</field>
+        <field name="model">academy.course</field>
+        <field name="arch" type="xml">
+            <list string="Courses">
+                <field name="name"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_academy_course_form" model="ir.ui.view">
+        <field name="name">academy.course.form</field>
+        <field name="model">academy.course</field>
+        <field name="arch" type="xml">
+            <form string="Course">
+                <header>
+                    <button name="action_start_course" string="Start Course" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_complete_course" string="Complete Course" type="object" class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,completed"/>
+                </header>
+                
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="student_count"/>
+                        <field name="description"/>
+                    </group>
+                    <notebook>
+                        <page string="Students" name="students">
+                            <field name="student_ids"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_academy_course" model="ir.actions.act_window">
+        <field name="name">Courses</field>
+        <field name="res_model">academy.course</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="view_academy_student_tree" model="ir.ui.view">
+        <field name="name">academy.student.tree</field>
+        <field name="model">academy.student</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="email"/>
+                <field name="course_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_academy_student_form" model="ir.ui.view">
+        <field name="name">academy.student.form</field>
+        <field name="model">academy.student</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="email"/>
+                        <field name="course_id"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_academy_student" model="ir.actions.act_window">
+        <field name="name">Students</field>
+        <field name="res_model">academy.student</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="view_partner_form_inherit_academy" model="ir.ui.view">
+    <field name="name">res.partner.form.inherit.academy</field>
+    <field name="model">res.partner</field>
+    <field name="inherit_id" ref="base.view_partner_form"/>
+    <field name="arch" type="xml">
+        <xpath expr="//field[@name='function']" position="after">
+            <field name="is_instructor"/>
+        </xpath>
+    </field>
+</record>
+
+    <menuitem id="menu_academy_root" name="Academy" sequence="10"/>
+    <menuitem id="menu_academy_course" name="Courses" parent="menu_academy_root" action="action_academy_course" sequence="10"/>
+    <menuitem id="menu_academy_student" name="Students" parent="menu_academy_root" action="action_academy_student" sequence="20"/>
+</odoo>

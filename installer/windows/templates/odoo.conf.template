@@ -1,0 +1,17 @@
+[options]
+addons_path = {{APP_INSTALL_DIR}}\server\addons,{{APP_INSTALL_DIR}}\server\custom_addons,{{APP_INSTALL_DIR}}\server\custom_license
+admin_passwd = {{ADMIN_PASSWORD}}
+data_dir = {{PROGRAMDATA_DIR}}\odoo\data
+db_host = 127.0.0.1
+db_port = 5432
+db_user = {{DB_USER}}
+db_password = {{DB_PASSWORD}}
+db_name = {{DB_NAME}}
+logfile = {{PROGRAMDATA_DIR}}\logs\odoo.log
+http_port = 8069
+proxy_mode = False
+list_db = False
+workers = 0
+max_cron_threads = 1
+server_wide_modules = base,web,custom_license
+pg_path = {{PG_BIN_PATH}}

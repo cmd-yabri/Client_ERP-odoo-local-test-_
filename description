@@ -1,0 +1,121 @@
+# ClientERP: Odoo to Windows Desktop Framework
+
+This repository extends a standard Odoo codebase (`backend/odoo` and `backend/addons`) into a standalone, offline-licensed Windows desktop product. It replaces the traditional browser-based Odoo experience with a native desktop window, runs the backend securely as a Windows Service, and packages the entire environment (including PostgreSQL) into a one-click installer.
+
+---
+
+## Core Capabilities
+
+* **Native Desktop Experience:** Replaces the standard browser launcher with an embedded desktop application window using WebView2 (`clienterp_launcher.py`).
+* **Background Service Wrapper:** Ensures the Odoo server runs continuously and auto-restarts via a dedicated Windows Service (`clienterp_service.py`).
+* **Offline Cryptographic Licensing:** Prevents Odoo from starting without a valid, hardware-fingerprinted license verified via Ed25519 signatures (`clienterp_server.py`, `license_guard.py`).
+* **Automated Release Pipeline:** Compiles Python executables, bundles dependencies, and builds the final `.exe` installer via a single command (`release_windows.ps1`).
+* **One-Click Installation:** Handles PostgreSQL setup, WebView2 installation, database initialization, migrations, and service registration silently (`clienterp.iss` and installer scripts).
+
+---
+
+## Tech Stack & Dependencies
+
+* **Desktop App:** `pywebview`, `pythonnet` (clr), Microsoft WebView2 Runtime
+* **Windows Service:** `pywin32` (`win32service`, `servicemanager`)
+* **Compilation & Packaging:** Nuitka (Python to `.exe`), Inno Setup / ISCC (`ClientERP-Setup.exe`)
+* **Licensing & Cryptography:** `cryptography` (Ed25519)
+* **Database:** PostgreSQL CLI tools (`psql`, `pg_dump`, `pg_restore`)
+
+---
+
+## Project Structure
+
+### Custom Odoo Modules
+
+* **Academy (`academy manifest`):** Example module demonstrating course/student models, extended partner profiles (`is_instructor`), custom views, scheduled crons, and JSON endpoints.
+* **License Bridge (`custom_license manifest`):** Odoo model bridge (`models.py`) exposing the offline runtime license engine (verify/status/request/install) to the Odoo API.
+
+### Licensing & Hardware Engine
+
+* `hardware.py`: Generates unique machine fingerprints.
+* `license_guard.py`: Core verification, signature checking, and enforcement.
+* `activation_cli.py`: Customer-facing tool to generate activation requests.
+* `vendor_license_cli.py`: Vendor-only utility to sign and issue licenses.
+* `clienterp_runtime`: Full runtime licensing package.
+
+### Windows Packaging & Build Scripts
+
+* `release_windows.ps1`: Master pipeline script for one-command releases.
+* `build_windows.ps1` / `build_installer.ps1`: Compiles executables and Inno Setup payload.
+* `stage_installer.ps1`: Prepares installer payload directories.
+* **Setup Scripts:** `install_postgres.ps1`, `install_webview2.ps1`, `configure_odoo.ps1`, `init_database.ps1`, `migrate_export.ps1`, `migrate_import.ps1`, `install_service.ps1`.
+
+---
+
+## Developer Guide: Bootstrapping a New Project
+
+To spin up a new ERP project based on this framework, follow these steps:
+
+1. **Clone and Rename:** Copy this repository to a new directory (e.g., `C:\MyNewERP`).
+2. **Define New Constants:** Determine your new `APP_NAME`, `SERVICE_NAME`, `DB_NAME`, `PORT`, `INSTALLER_APPID` (generate a new GUID), and product code.
+3. **Update Core Identity Values:**
+* `license_guard.py`: Update `PRODUCT_CODE`.
+* `paths.py`: Update `APP_NAME`.
+* `clienterp_service.py`: Update `SERVICE_NAME` and display descriptions.
+* `clienterp_launcher.py`: Update `SERVICE_NAME`, URL, and port.
+* `clienterp.iss`: Update `MyAppName`, `AppId`, and database/service defaults.
+
+
+4. **Clean Leftover References:** Use ripgrep to find and replace old names:
+```powershell
+Set-Location C:\MyNewERP
+rg -n "ClientERP|clienterp|ClientERPService" backend build installer docs
+
+```
+
+
+5. **Generate Fresh Cryptographic Keys:**
+```powershell
+.\backend\venv\Scripts\python.exe .\backend\clienterp_vendor_license.py generate-keys `
+  --private-out .\secrets\mynewerp_private.pem `
+  --public-out .\installer\windows\templates\public_key.pem
+
+```
+
+
+6. **Secure the Installer:** Open `clienterp.iss` and replace the default installer secrets (e.g., `123456`) with strong, client-specific credentials.
+7. **Manage Odoo Modules:** Retain or remove the `academy` module. Ensure the `custom_license` bridge is kept for offline activation.
+8. **Build the Release:**
+```powershell
+.\build\windows\release_windows.ps1 -Clean -StopStaleBuildProcesses -Lto no
+
+```
+
+
+
+---
+
+## Delivery Standard Operating Procedure (SOP)
+
+### Production Security Warnings
+
+* **Never ship the private key (`mynewerp_private.pem`) or the uncompiled source code.**
+* Ensure a real, valid public key (`public_key.pem`) is embedded during setup.
+
+### Client Handoff
+
+1. **Build:** Generate the client package using client-specific installer secrets.
+2. **Deliver:** Send the compiled `Setup.exe` and its `.sha256` checksum to the client.
+3. **Request:** The client installs the application and runs the activation tool to generate an `activation_request.json`.
+4. **Sign:** Process their request offline on your secure vendor machine:
+```powershell
+.\backend\venv\Scripts\python.exe .\backend\clienterp_vendor_license.py issue-license `
+  --private-key .\secrets\mynewerp_private.pem `
+  --request-file C:\temp\activation_request.json `
+  --out C:\temp\license.json `
+  --customer "Client Name"
+
+```
+
+
+5. **Activate:** Return `license.json` to the client. They install it via the app, unlocking the database and launching the desktop environment.
+
+---
+
+Would you like me to draft a `CHANGELOG.md` template or a detailed `CONTRIBUTING.md` guide to go alongside this README?

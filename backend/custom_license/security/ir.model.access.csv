@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_custom_license_custom_license,custom_license.custom_license,model_custom_license_custom_license,base.group_user,1,1,1,1
